@@ -1,0 +1,8 @@
+certifi
+openpyxl
+pandas
+plotly
+pymongo
+python-dotenv
+streamlit
+streamlit-authenticator == 0.3.3
