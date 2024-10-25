@@ -39,7 +39,7 @@ st.set_page_config(
 
 # --- Authentication ---
 # Load hashed passwords
-file_path = Path('Box.py').parent/"db"/"hashed_pw.pkl"
+file_path = Path('comodoro.py').parent/"db"/"hashed_pw.pkl"
 
 with file_path.open("rb") as file:
   hashed_passwords = pickle.load(file)
@@ -111,6 +111,50 @@ def inserindo_dados():
     st.session_state['estoque_1'] = estoque_1
     st.session_state['estoque_2'] = estoque_2
     st.session_state['estoque_3'] = estoque_3
+
+def deletando_produtos():
+    estoque = st.session_state['estoque']
+    col1,col2,col3,col4,col5,col6 = st.columns(6)
+    op = ['Editar', 'Apagar']
+    opcoes = col1.selectbox('Opções', op)
+    cod = estoque['Código'].value_counts().index
+
+    if opcoes == 'Editar':
+        codigo = col2.selectbox('Cód', cod)
+        if codigo == 1:
+            df_cod = estoque[estoque['Código'] == codigo]
+            produto = df_cod['Produto'].value_counts().index
+            prod = col3.selectbox('Prod.', produto)
+            
+            campo = ['Produto', 'Quantidade', 'Valor de compra']
+            campos = col4.selectbox('Selecione o campo para editar', campo)
+            if campos == 'Produto':
+                entry = col5.text_input('Novo produto')
+            if campos == 'Quantidade':
+                entry = col5.number_input('Nova quantidade', min_value=0)
+            if campos == 'Valor de compra':
+                entry = col5.number_input('Novo Valor')
+            edita_produto = col6.button('Editar')
+            if edita_produto:
+                coll.update_one({'Produto': produto}, {'$set' : {campos : entry}})
+    
+    
+    if opcoes == 'Apagar':
+        codigo = col2.selectbox('Cód', cod)
+        if codigo == 3:
+            df_cod = estoque[estoque['Código'] == codigo]
+            produto = df_cod['Moto'].value_counts().index
+            bike = col3.selectbox('Moto', produto)
+            edita_produto = col4.button('Apagar')
+            if edita_produto:
+                coll.delete_one({'Moto': bike})
+        else:        
+            df_cod = estoque[estoque['Código'] == codigo]
+            produto = df_cod['Produto'].value_counts().index
+            prod = col3.selectbox('Prod.', produto)
+            edita_produto = col4.button('Apagar')
+            if edita_produto:
+                coll.delete_one({'Produto': prod})
 
 def efetuando_vendas():
 
@@ -210,6 +254,7 @@ def efetuando_vendas():
                     'Data do débito' : str(data_debito)}
             
         finalsell = estoque_2[estoque_2['Produto'] == produto][['Quantidade']].values[0] - quantidade
+        finalsell
         vende_produto = col8.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
@@ -321,6 +366,17 @@ def historico_vendas():
     st.session_state['hist_3'] = hist_3
 
     st.session_state['hist_full'] = df
+
+    col1,col2,col3 = st.columns(3)
+    pessoa = df['Cliente'].value_counts().index
+    cliente = col1.selectbox('Cliente', pessoa)
+    df_cliente = df[df['Cliente'] == cliente]
+    data = df_cliente['Data da venda'].value_counts().index
+    data_venda = col2.selectbox('Data da venda', data)
+    deleta_venda = col3.button('Deletar')
+    if deleta_venda:
+        coll2.delete_one({'Cliente': cliente,
+                         'Data da venda' : data_venda})    
 
 def pesquisa_pgto():
     fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
@@ -549,10 +605,6 @@ def pesquisa_pgto():
             else:
                 pd.DataFrame(log_atendimentodf)[['Data do pagamento','Forma pagamento', 'Valor']]
 
-
-
-
-
 def pagina_principal():
     st.title('**BOX Comodoro**')
 
@@ -566,6 +618,8 @@ def pagina_principal():
     
     with tab1:
         inserindo_dados()
+        st.divider()
+        deletando_produtos()
                 
     tab2.title('Vendas')
 
