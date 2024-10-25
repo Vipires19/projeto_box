@@ -39,7 +39,7 @@ st.set_page_config(
 
 # --- Authentication ---
 # Load hashed passwords
-file_path = Path('comodoro.py').parent/"db"/"hashed_pw.pkl"
+file_path = Path('Box.py').parent/"db"/"hashed_pw.pkl"
 
 with file_path.open("rb") as file:
   hashed_passwords = pickle.load(file)
