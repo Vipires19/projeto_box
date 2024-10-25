@@ -209,7 +209,7 @@ def efetuando_vendas():
                     'Forma de pagamento' : forma_pagamento,
                     'Data do débito' : str(data_debito)}
             
-        finalsell = estoque_2[estoque_2['Produto'] == produto][['Quantidade']].values - quantidade
+        finalsell = estoque_2[estoque_2['Produto'] == produto][['Quantidade']].values[0] - quantidade
         vende_produto = col8.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
