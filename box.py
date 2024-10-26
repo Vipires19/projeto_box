@@ -362,7 +362,8 @@ def historico_vendas():
                                     'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     hist_3['Quantidade de semanas'] = hist_3['Quantidade de semanas'].fillna(0)
 
-    hist_3
+    st.dataframe(pd.DataFrame(hist_3, columns= [['Data da venda', 'Produto' , 'Moto', 'Cliente','Data do aluguel', 'Quantidade de dias', 'Valor do aluguel', 
+                                    'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]))
     st.session_state['hist_3'] = hist_3
 
     st.session_state['hist_full'] = df
@@ -464,9 +465,9 @@ def pesquisa_pgto():
         cliente = st.selectbox('Cliente', nome)
         df_cliente = hist_2[hist_2['Cliente'] == cliente]
         df_cliente
-        prod = df_cliente['Quantidade'].value_counts().index
+        prod = df_cliente['Data da venda'].value_counts().index
         produto = st.selectbox('Vale', prod)
-        df_produto = df_cliente[df_cliente['Quantidade'] == produto]
+        df_produto = df_cliente[df_cliente['Data da venda'] == produto]
     
         col1,col2,col3,col4 = st.columns(4)
 
