@@ -362,8 +362,7 @@ def historico_vendas():
                                     'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     hist_3['Quantidade de semanas'] = hist_3['Quantidade de semanas'].fillna(0)
 
-    st.dataframe(pd.DataFrame(hist_3, columns= [['Data da venda', 'Produto' , 'Moto', 'Cliente','Data do aluguel', 'Quantidade de dias', 'Valor do aluguel', 
-                                    'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]))
+    st.dataframe(pd.DataFrame(hist_3))
     st.session_state['hist_3'] = hist_3
 
     st.session_state['hist_full'] = df
@@ -380,18 +379,32 @@ def historico_vendas():
                          'Data da venda' : data_venda})    
 
 def pesquisa_pgto():
+    df = st.session_state['hist_full']
     fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
-    categoria = ['Artigos', 'Vale/Antecipação', 'Aluguel']
-    cat = st.selectbox('Categoria', categoria)
-    if cat == 'Artigos':
-        hist_1 = st.session_state['hist_1']
-        nome = hist_1['Cliente'].value_counts().index
-        cliente = st.selectbox('Cliente', nome)
-        df_cliente = hist_1[hist_1['Cliente'] == cliente]
-        df_cliente
-        prod = df_cliente['Produto'].value_counts().index
+    cliente = df['Cliente'].value_counts().index
+    clientes = st.selectbox('Motoca', cliente)
+    df_motoca = df[df['Cliente'] == clientes]
+    df_motoca_1 = df_motoca[df_motoca['Código'] == 1]
+    df_motoca_2 = df_motoca[df_motoca['Código'] == 2]
+    df_motoca_3 = df_motoca[df_motoca['Código'] == 3]
+    col1,col2,col3 = st.columns(3)
+    col1.header('Artigos')
+    col1.dataframe(df_motoca_1)
+    col2.header('Vale/Antecipação')
+    col2.dataframe(df_motoca_2)
+    col3.header('Aluguel Moto')
+    col3.dataframe(df_motoca_3)
+
+    categoria = df['Código'].value_counts().index
+    cat = st.selectbox('Cód', categoria)
+    if cat == 1:
+        #nome = hist_1['Cliente'].value_counts().index
+        #cliente = st.selectbox('Cliente', nome)
+        #df_cliente = hist_1[hist_1['Cliente'] == cliente]
+        #df_cliente
+        prod = df_motoca_1['Produto'].value_counts().index
         produto = st.selectbox('Prod.', prod)
-        df_produto = df_cliente[df_cliente['Produto'] == produto]
+        df_produto = df_motoca_1[df_motoca_1['Produto'] == produto]
         
     
         col1,col2,col3,col4 = st.columns(4)
@@ -425,13 +438,13 @@ def pesquisa_pgto():
             val_pal = valor/quantidade_semanas
             col3.metric('Quantidade de semanas', quantidade_semanas)
             col4.metric('Valor da parcela', f'R${val_pal:,.2f}')
-            pagamento = {'Cliente' : cliente,
+            pagamento = {'Cliente' : clientes,
                          'Produto' : produto,
                          'Valor' : val_pal,
                         'Forma pagamento' : forma_pgto}
             
         else:
-            pagamento = {'Cliente' : cliente,
+            pagamento = {'Cliente' : clientes,
                          'Produto' : produto,
                          'Valor' : valor,
                          'Forma pagamento' : forma_pgto}            
@@ -446,7 +459,7 @@ def pesquisa_pgto():
             pagamento.update({'Data do pagamento' : tempo_agora})
             coll3.insert_many([pagamento])
         
-        log_atendimento = coll3.find({'Produto' : produto, 'Cliente' : cliente})
+        log_atendimento = coll3.find({'Produto' : produto, 'Cliente' : clientes})
 
         log_atendimentodf = []
         for item in log_atendimento:
@@ -459,15 +472,15 @@ def pesquisa_pgto():
             else:
                 pd.DataFrame(log_atendimentodf)[['Data do pagamento','Forma pagamento', 'Valor']]
 
-    if cat == 'Vale/Antecipação':
-        hist_2 = st.session_state['hist_2']
-        nome = hist_2['Cliente'].value_counts().index
-        cliente = st.selectbox('Cliente', nome)
-        df_cliente = hist_2[hist_2['Cliente'] == cliente]
-        df_cliente
-        prod = df_cliente['Data da venda'].value_counts().index
+    if cat == 2:
+        #hist_2 = st.session_state['hist_2']
+        #nome = hist_2['Cliente'].value_counts().index
+        #cliente = st.selectbox('Cliente', nome)
+        #df_cliente = hist_2[hist_2['Cliente'] == cliente]
+        #df_cliente
+        prod = df_motoca_2['Data da venda'].value_counts().index
         produto = st.selectbox('Vale', prod)
-        df_produto = df_cliente[df_cliente['Data da venda'] == produto]
+        df_produto = df_motoca_2[df_motoca_2['Data da venda'] == produto]
     
         col1,col2,col3,col4 = st.columns(4)
 
@@ -498,13 +511,13 @@ def pesquisa_pgto():
             val_pal = valor/quantidade_semanas
             col3.metric('Quantidade de semanas', quantidade_semanas)
             col4.metric('Valor da parcela', f'R${val_pal:,.2f}')
-            pagamento = {'Cliente' : cliente,
+            pagamento = {'Cliente' : clientes,
                          'Quantidade' : produto,
                          'Valor' : val_pal,
                          'Forma pagamento' : forma_pgto}
             
         else:
-            pagamento = {'Cliente' : cliente,
+            pagamento = {'Cliente' : clientes,
                          'Quantidade' : produto,
                          'Valor' : valor,
                          'Forma pagamento' : forma_pgto}
@@ -519,7 +532,7 @@ def pesquisa_pgto():
             pagamento.update({'Data do pagamento' : tempo_agora})
             coll3.insert_many([pagamento])
 
-        log_atendimento = coll3.find({'Quantidade' : produto, 'Cliente' : cliente})
+        log_atendimento = coll3.find({'Quantidade' : produto, 'Cliente' : clientes})
 
         log_atendimentodf = []
         for item in log_atendimento:
@@ -532,15 +545,15 @@ def pesquisa_pgto():
             else:
                 pd.DataFrame(log_atendimentodf)[['Data do pagamento','Forma pagamento', 'Valor']]
                  
-    if cat == 'Aluguel':
-        hist_3 = st.session_state['hist_3']
-        nome = hist_3['Cliente'].value_counts().index
-        cliente = st.selectbox('Cliente', nome)
-        df_cliente = hist_3[hist_3['Cliente'] == cliente]
-        df_cliente
-        prod = df_cliente['Moto'].value_counts().index
+    if cat == 3:
+        #hist_3 = st.session_state['hist_3']
+        #nome = hist_3['Cliente'].value_counts().index
+        #cliente = st.selectbox('Cliente', nome)
+        #df_cliente = hist_3[hist_3['Cliente'] == cliente]
+        #df_cliente
+        prod = df_motoca_3['Moto'].value_counts().index
         produto = st.selectbox('Moto', prod)
-        df_produto = df_cliente[df_cliente['Moto'] == produto]
+        df_produto = df_motoca_3[df_motoca_3['Moto'] == produto]
     
         col1,col2,col3,col4,col5 = st.columns(5)
 
@@ -572,13 +585,13 @@ def pesquisa_pgto():
             val_pal = valor/quantidade_semanas
             col3.metric('Quantidade de semanas', quantidade_semanas)
             col4.metric('Valor da parcela', f'R${val_pal:,.2f}')
-            pagamento = {'Cliente' : cliente,
+            pagamento = {'Cliente' : clientes,
                          'Moto' : produto,
                          'Valor' : val_pal,
                          'Forma pagamento' : forma_pgto}
             
         else:
-            pagamento = {'Cliente' : cliente,
+            pagamento = {'Cliente' : clientes,
                          'Moto' : produto,
                          'Valor' : valor,
                          'Forma pagamento' : forma_pgto}
@@ -593,7 +606,7 @@ def pesquisa_pgto():
             pagamento.update({'Data do pagamento' : tempo_agora})
             coll3.insert_many([pagamento])
 
-        log_atendimento = coll3.find({'Moto' : produto, 'Cliente' : cliente})
+        log_atendimento = coll3.find({'Moto' : produto, 'Cliente' : clientes})
 
         log_atendimentodf = []
         for item in log_atendimento:
