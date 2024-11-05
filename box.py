@@ -563,7 +563,7 @@ def pesquisa_pgto():
         data3 = str(datetime_obj).split(' ')[0].split('-')[2]
         data_metric = f'{data3}/{data2}/{data1}'
 
-        quantidade = df_produto['Quantidade de dias'].value_counts().index
+        quantidade = df_produto['Quantidade de dias'].value_counts().index[0]
         valor = df_produto['Valor do aluguel'].value_counts().index[0]
         forma_pgto = df_produto['Forma de pagamento'].value_counts().index[0]
 
