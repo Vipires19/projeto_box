@@ -343,7 +343,7 @@ def historico_vendas():
               'Data do débito', 'Quantidade de semanas', 'Moto', 'Quantidade de dias',
               'Data do aluguel', 'Valor do aluguel']]
     
-    st.markdown('**Venda de artigos**')
+    st.markdown('**Venda de produtos**')
     hist_1 = df[df['Código'] == 1][['Data da venda', 'Produto' ,'Quantidade', 'Cliente', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     hist_1['Quantidade de semanas'] = hist_1['Quantidade de semanas'].fillna(0)
     
@@ -384,11 +384,11 @@ def pesquisa_pgto():
     cliente = df['Cliente'].value_counts().index
     clientes = st.selectbox('Motoca', cliente)
     df_motoca = df[df['Cliente'] == clientes]
-    df_motoca_1 = df_motoca[df_motoca['Código'] == 1]
-    df_motoca_2 = df_motoca[df_motoca['Código'] == 2]
-    df_motoca_3 = df_motoca[df_motoca['Código'] == 3]
+    df_motoca_1 = df_motoca[df_motoca['Código'] == 1][['Data da venda', 'Produto' ,'Quantidade', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
+    df_motoca_2 = df_motoca[df_motoca['Código'] == 2][['Data da venda', 'Data do vale', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
+    df_motoca_3 = df_motoca[df_motoca['Código'] == 3][['Data da venda', 'Produto' , 'Moto', 'Data do aluguel', 'Quantidade de dias', 'Valor do aluguel', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     col1,col2,col3 = st.columns(3)
-    col1.header('Artigos')
+    col1.header('Produtos')
     col1.dataframe(df_motoca_1)
     col2.header('Vale/Antecipação')
     col2.dataframe(df_motoca_2)
@@ -650,7 +650,6 @@ def pagina_principal():
     with tab4:
         pesquisa_pgto()
             
-
 def main():
     if st.session_state["authentication_status"]:
     
@@ -661,7 +660,6 @@ def main():
 
     elif st.session_state["authentication_status"] == None:
         st.warning("Please insert username and password")
-
 
 if __name__ == '__main__':
 
