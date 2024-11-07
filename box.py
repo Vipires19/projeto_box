@@ -30,6 +30,7 @@ db = client.estoquecmdr
 coll = db.estoque
 coll2 = db.Vendas
 coll3 = db.pagamentos
+coll4 = db.clientes
 
 st.set_page_config(
             layout =  'wide',
@@ -49,6 +50,10 @@ credentials = {
         "admin": {
             "name": "Admin",
             "password": hashed_passwords[0]
+        },
+        "Ribas" : {
+            'name' : 'Ribas',
+            'password' : hashed_passwords[0]
         }
     }
 }
@@ -157,12 +162,20 @@ def deletando_produtos():
                 coll.delete_one({'Produto': prod})
 
 def efetuando_vendas():
-
+    cadastro = coll4.find({})
+    clientesdf = []
+    for item in cadastro:
+        clientesdf.append(item)
+    
+    clientesdf = pd.DataFrame(clientesdf, columns= ['_id', 'nome'])
+    clientesdf.drop(columns='_id', inplace=True)
+    
     estoque = st.session_state['estoque']
     estoque_1 = st.session_state['estoque_1']
     estoque_2 = st.session_state['estoque_2']
     estoque_3 = st.session_state['estoque_3']
     fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
+
 
     col1,col2,col3,col4, col5,col6,col7,col8= st.columns(8)
 
@@ -176,7 +189,8 @@ def efetuando_vendas():
         valor_venda = col4.number_input('Valor de venda em R$' )
         total = quantidade * valor_venda
         valor_total = col4.metric('Valor total', f'R$ {total:,.2f}')
-        cliente = col5.text_input('Nome do cliente')
+        nome = clientesdf['nome'].value_counts().index
+        cliente = col5.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
         forma_pagamento = col6.selectbox('Forma de pagamento', pagamento)
         data_debito = col7.date_input('Data do débito', format='DD.MM.YYYY')
@@ -221,11 +235,12 @@ def efetuando_vendas():
     if codigo == 2:
         prod = estoque_2['Produto'].value_counts().index
         produto = col2.selectbox('Produto', prod)
-        quantidade = col3.number_input('Quantidade.', min_value = 1)
+        quantidade = col3.number_input('Quantidade.', min_value = 1, max_value=1)
         data_vale = col4.date_input('Data do vale', format='DD.MM.YYYY')
         valor_vale = col5.number_input('Valor do vale em R$')
         total = quantidade * valor_vale
-        cliente = col6.text_input('Nome do cliente')
+        nome = clientesdf['nome'].value_counts().index
+        cliente = col6.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
         forma_pagamento = col7.selectbox('Forma de pagamento', pagamento)
         data_debito = col8.date_input('Data do débito', format='DD.MM.YYYY')
@@ -254,7 +269,7 @@ def efetuando_vendas():
                     'Data do débito' : str(data_debito)}
             
         finalsell = estoque_2[estoque_2['Produto'] == produto][['Quantidade']].values[0] - quantidade
-        finalsell
+        
         vende_produto = col8.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
@@ -278,7 +293,8 @@ def efetuando_vendas():
         valor_diaria = col5.number_input('Valor da diaria em R$')
         total = quantidade * valor_diaria
         valor_total = col5.metric('Valor total', f'R$ {total:,.2f}')
-        cliente = col6.text_input('Nome do cliente')
+        nome = clientesdf['nome'].value_counts().index
+        cliente = col6.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
         forma_pagamento = col7.selectbox('Forma de pagamento', pagamento)
         data_debito = col8.date_input('Data do débito', format='DD.MM.YYYY')
@@ -323,6 +339,29 @@ def efetuando_vendas():
             coll.delete_one({'Placa': moto})
             
         estoque_3    
+
+    st.divider()
+    
+    st.markdown('Cadastro de novos clientes')
+    nome_cliente = st.text_input('Nome cliente:')
+    col1,col2,col3,col4,col5,col6 = st.columns(6)
+    cadastrar = col1.button('Cadastrar')
+    if cadastrar:
+        coll4.insert_many([{'nome' : nome_cliente}])
+    deletar = col2.button('Excluir')
+    if deletar:
+        coll4.delete_one({'nome' : nome_cliente})
+
+def atualizando_quantidade():
+    estoque = st.session_state['estoque']
+    estoque = estoque[['Produto', 'Quantidade']]
+    for value in estoque['Quantidade']:
+        if value == 0:
+            produto = estoque[estoque['Quantidade'] == value]['Produto']
+            for prod in produto:
+                coll.delete_one({'Produto': prod})
+        if value != 0:
+            pass
 
 def historico_vendas():
     venda1 = db.Vendas.find({})
@@ -625,7 +664,7 @@ def pagina_principal():
     btn = authenticator.logout()
     if btn:
         st.session_state["authentication_status"] == None
-    
+
     tab1,tab2,tab3,tab4 = st.tabs(['Estoque', 'Vendas','Histórico de Vendas', 'Pagamento'])
 
     tab1.title('Estoque')
@@ -649,6 +688,8 @@ def pagina_principal():
 
     with tab4:
         pesquisa_pgto()
+
+    atualizando_quantidade()
             
 def main():
     if st.session_state["authentication_status"]:
