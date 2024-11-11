@@ -31,6 +31,7 @@ coll = db.estoque
 coll2 = db.Vendas
 coll3 = db.pagamentos
 coll4 = db.clientes
+coll5 = db.Usuarios
 
 st.set_page_config(
             layout =  'wide',
@@ -44,22 +45,20 @@ file_path = Path('comodoro.py').parent/"db"/"hashed_pw.pkl"
 
 with file_path.open("rb") as file:
   hashed_passwords = pickle.load(file)
+
+user = coll5.find({})
+users = []
+for item in user:
+    item.pop('_id', None)
+    users.append(item)
+
+usuarios = {'usernames' : {}}
+for item in users:
+    usuarios['usernames'][item['username']] = {'name' : item['name'], 'password' : item['password'][0]}
   
-credentials = {
-    "usernames": {
-        "admin": {
-            "name": "Admin",
-            "password": hashed_passwords[0]
-        },
-        "Ribas" : {
-            'name' : 'Ribas',
-            'password' : hashed_passwords[0]
-        }
-    }
-}
+credentials = usuarios
 
-
-authenticator = stauth.Authenticate(credentials= credentials, cookie_name="st_session", cookie_key="key123", cookie_expiry_days= 1)
+authenticator = stauth.Authenticate(credentials= credentials, cookie_name= 'random_cookie_name', cookie_key='key123', cookie_expiry_days= 1)
 authenticator.login()
 
 def inserindo_dados():
@@ -375,36 +374,74 @@ def historico_vendas():
             if isinstance(data_utc, datetime):
                 data_brasilia = data_utc.astimezone(fuso_horario_brasilia)
                 item['Data da venda'] = data_brasilia.strftime('%d/%m/%Y %H:%M')
-    
+
     df = pd.DataFrame(venda_df)
     df.drop(columns='_id', inplace=True)
     df = df[['Código','Quantidade','Data da venda', 'Cliente', 'Forma de pagamento', 'Produto' ,'Data do vale', 'Valor da venda',
               'Data do débito', 'Quantidade de semanas', 'Moto', 'Quantidade de dias',
               'Data do aluguel', 'Valor do aluguel']]
     
-    st.markdown('**Venda de produtos**')
+    st.session_state['hist_full'] = df
+    
     hist_1 = df[df['Código'] == 1][['Data da venda', 'Produto' ,'Quantidade', 'Cliente', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     hist_1['Quantidade de semanas'] = hist_1['Quantidade de semanas'].fillna(0)
-    
-    hist_1
     st.session_state['hist_1'] = hist_1
 
-    st.markdown('**Vales/Antecipações**')
     hist_2 = df[df['Código'] == 2][['Data da venda', 'Produto' , 'Quantidade', 'Data do vale', 'Cliente', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     hist_2['Quantidade de semanas'] = hist_2['Quantidade de semanas'].fillna(0)
-
-    hist_2
     st.session_state['hist_2'] = hist_2
-
-    st.markdown('**Aluguel de motos**')
+    
     hist_3 = df[df['Código'] == 3][['Data da venda', 'Produto' , 'Moto', 'Cliente','Data do aluguel', 'Quantidade de dias', 'Valor do aluguel', 
                                     'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     hist_3['Quantidade de semanas'] = hist_3['Quantidade de semanas'].fillna(0)
-
-    st.dataframe(pd.DataFrame(hist_3))
     st.session_state['hist_3'] = hist_3
 
-    st.session_state['hist_full'] = df
+    filtro_hist = st.segmented_control('Filtro', ['Diário', 'Geral'], selection_mode = 'single')
+
+
+    if filtro_hist == 'Diário':
+
+        col1,col2,col3 = st.columns(3)
+        dia = col1.number_input('Pesquisa Dia', min_value=1, max_value=31)
+        mes = str(col2.number_input('Pesquisa Mês', min_value=1, max_value=12))
+        ano = str(col3.number_input('Pesquisa Ano', min_value=2024, max_value=2030))
+        if dia <= 9:
+            dia = f'0{dia}'
+        data_pesquisa = f'{ano}-{mes}-{dia}'
+    
+        st.header('**Venda de produtos**')
+
+        produtos = hist_1[hist_1['Data do débito'] == data_pesquisa]
+        if produtos['Quantidade'].empty:
+            st.markdown('Não há vendas para data selecionada')
+        else:
+            produtos
+    
+        st.header('**Vales/Antecipações**')
+
+        vales = hist_2[hist_2['Data do débito'] == data_pesquisa]
+        if vales['Quantidade'].empty:
+            st.markdown('Não há vales para data selecionada')
+        else:
+            vales
+    
+        st.header('**Aluguel de motos**')
+
+        motos = hist_3[hist_3['Data do aluguel'] == data_pesquisa]
+        if motos['Moto'].empty:
+            st.markdown('Não há aluguéis para data selecionada')
+        else:
+            motos
+
+    if filtro_hist == 'Geral':
+        st.header('**Venda de produtos**')
+        hist_1
+
+        st.header('**Vales/Antecipações**')
+        hist_2
+
+        st.header('**Aluguel de motos**')
+        hist_3
 
     col1,col2,col3 = st.columns(3)
     pessoa = df['Cliente'].value_counts().index
