@@ -38,6 +38,8 @@ st.set_page_config(
             page_title = 'Comodoro Delivery',
         )
 
+st.logo('files/LOGO.png', icon_image='files/WhatsApp Image 2025-01-04 at 11.51.06.jpeg')
+
 
 # --- Authentication ---
 # Load hashed passwords
@@ -140,7 +142,7 @@ def deletando_produtos():
                 entry = col5.number_input('Novo Valor')
             edita_produto = col6.button('Editar')
             if edita_produto:
-                coll.update_one({'Produto': produto}, {'$set' : {campos : entry}})
+                coll.update_one({'Produto': prod}, {'$set' : {campos : entry}})
     
     
     if opcoes == 'Apagar':
@@ -375,11 +377,16 @@ def historico_vendas():
                 data_brasilia = data_utc.astimezone(fuso_horario_brasilia)
                 item['Data da venda'] = data_brasilia.strftime('%d/%m/%Y %H:%M')
 
+    oss = db.servicos.find({})
+    df_os = []
+    for item in oss:
+        df_os.append(item)
+
     df = pd.DataFrame(venda_df)
-    df.drop(columns='_id', inplace=True)
+    
     df = df[['Código','Quantidade','Data da venda', 'Cliente', 'Forma de pagamento', 'Produto' ,'Data do vale', 'Valor da venda',
               'Data do débito', 'Quantidade de semanas', 'Moto', 'Quantidade de dias',
-              'Data do aluguel', 'Valor do aluguel']]
+              'Data do aluguel', 'Valor do aluguel', 'Valor', '_id', 'Venda', 'Mecanico']]
     
     st.session_state['hist_full'] = df
     
@@ -396,7 +403,11 @@ def historico_vendas():
     hist_3['Quantidade de semanas'] = hist_3['Quantidade de semanas'].fillna(0)
     st.session_state['hist_3'] = hist_3
 
-    filtro_hist = st.segmented_control('Filtro', ['Diário', 'Geral'], selection_mode = 'single')
+    hist_4 = df[df['Código'] == 4][['Data da venda', 'Valor', 'Cliente', 'Mecanico', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas', '_id']]
+    hist_4['Quantidade de semanas'] = hist_4['Quantidade de semanas'].fillna(0)
+    st.session_state['hist_4'] = hist_4
+
+    filtro_hist = st.selectbox('Filtro', ['Diário', 'Geral'])
 
 
     if filtro_hist == 'Diário':
@@ -407,6 +418,8 @@ def historico_vendas():
         ano = str(col3.number_input('Pesquisa Ano', min_value=2024, max_value=2030))
         if dia <= 9:
             dia = f'0{dia}'
+        if mes <= '9':
+            mes = f'0{mes}'
         data_pesquisa = f'{ano}-{mes}-{dia}'
     
         st.header('**Venda de produtos**')
@@ -433,6 +446,14 @@ def historico_vendas():
         else:
             motos
 
+        st.header('**Ordens de serviço**')
+
+        manutencao = hist_4[hist_4['Data do débito'] == data_pesquisa]
+        if manutencao['_id'].empty:
+            st.markdown('Não há ordens de serviço para data selecionada')
+        else:
+            manutencao
+
     if filtro_hist == 'Geral':
         st.header('**Venda de produtos**')
         hist_1
@@ -442,6 +463,9 @@ def historico_vendas():
 
         st.header('**Aluguel de motos**')
         hist_3
+
+        st.header('**Ordens de serviço**')
+        hist_4
 
     col1,col2,col3 = st.columns(3)
     pessoa = df['Cliente'].value_counts().index
@@ -472,7 +496,7 @@ def pesquisa_pgto():
     col3.dataframe(df_motoca_3)
 
     categoria = df['Código'].value_counts().index
-    cat = st.selectbox('Cód', categoria)
+    cat = st.selectbox('Cod', categoria)
     if cat == 1:
         #nome = hist_1['Cliente'].value_counts().index
         #cliente = st.selectbox('Cliente', nome)
@@ -696,13 +720,15 @@ def pesquisa_pgto():
                 pd.DataFrame(log_atendimentodf)[['Data do pagamento','Forma pagamento', 'Valor']]
 
 def pagina_principal():
-    st.title('**BOX Comodoro**')
+    col1,col2 = st.columns(2)
+    col1.title('**BOX Comodoro**')
+    col2.image('files/WhatsApp Image 2025-01-04 at 11.51.06.jpeg', width=200)
 
     btn = authenticator.logout()
     if btn:
         st.session_state["authentication_status"] == None
 
-    tab1,tab2,tab3,tab4 = st.tabs(['Estoque', 'Vendas','Histórico de Vendas', 'Pagamento'])
+    tab1,tab2,tab3 = st.tabs(['Estoque', 'Vendas','Histórico de Vendas'])#, 'Pagamento'])
 
     tab1.title('Estoque')
     
@@ -721,10 +747,10 @@ def pagina_principal():
     with tab3:
         historico_vendas()
 
-    tab4.title('Pagamento')
+    #tab4.title('Pagamento')
 
-    with tab4:
-        pesquisa_pgto()
+    #with tab4:
+    #    pesquisa_pgto()
 
     atualizando_quantidade()
             
