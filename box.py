@@ -386,7 +386,7 @@ def historico_vendas():
     
     df = df[['Código','Quantidade','Data da venda', 'Cliente', 'Forma de pagamento', 'Produto' ,'Data do vale', 'Valor da venda',
               'Data do débito', 'Quantidade de semanas', 'Moto', 'Quantidade de dias',
-              'Data do aluguel', 'Valor do aluguel', 'Valor', '_id', 'Venda', 'Mecanico']]
+              'Data do aluguel', 'Valor do aluguel', 'Valor', '_id', 'Venda', 'Mecanico','Mão de obra']]
     
     st.session_state['hist_full'] = df
     
