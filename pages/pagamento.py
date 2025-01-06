@@ -65,6 +65,7 @@ authenticator.login()
 
 def pesquisa_pgto():
     df = st.session_state['hist_full']
+    
     fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
     cliente = df['Cliente'].value_counts().index
     clientes = st.selectbox('Motoca', cliente)
@@ -72,8 +73,8 @@ def pesquisa_pgto():
     df_motoca_1 = df_motoca[df_motoca['Código'] == 1][['Data da venda', 'Produto' ,'Quantidade', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     df_motoca_2 = df_motoca[df_motoca['Código'] == 2][['Data da venda', 'Data do vale', 'Valor da venda', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
     df_motoca_3 = df_motoca[df_motoca['Código'] == 3][['Data da venda', 'Produto' , 'Moto', 'Data do aluguel', 'Quantidade de dias', 'Valor do aluguel', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas']]
-    df_motoca_4 = df_motoca[df_motoca['Código'] == 4][['Data da venda', 'Valor', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas', '_id','Venda', 'Mecanico']]
-    
+    df_motoca_4 = df_motoca[df_motoca['Código'] == 4][['Data da venda', 'Valor', 'Forma de pagamento', 'Data do débito', 'Quantidade de semanas', '_id','Venda', 'Mecanico','Mão de obra']]
+
     
     col1,col2 = st.columns(2)
     col1.header('Produtos')
@@ -334,7 +335,7 @@ def pesquisa_pgto():
         data2 = str(datetime_obj).split(' ')[0].split('-')[1]
         data3 = str(datetime_obj).split(' ')[0].split('-')[2]
         data_metric = f'{data3}/{data2}/{data1}'
-
+        valor_obra  = df_produto['Mão de obra'].value_counts().index[0]
         valor = df_produto['Valor'].value_counts().index[0]
         forma_pgto = df_produto['Forma de pagamento'].value_counts().index[0]
 
@@ -348,6 +349,7 @@ def pesquisa_pgto():
         col2.markdown('Produtos')
         col2.dataframe(df_itens)
         col3.metric('Mecânico', df_motoca_4['Mecanico'].values[0])
+        col4.metric('Valor Mão de obra', f'R$ {valor_obra:,.2f}' )
         col4.metric('Valor', f'R$ {valor:,.2f}')
         col1.metric('Forma de pagamento', forma_pgto)
         col3.metric('Data do débito', data_d)

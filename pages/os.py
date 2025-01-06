@@ -82,7 +82,7 @@ def vendas():
     
     st.divider()
 
-    col1,col2,col3,col4,col5,col6,col7 = st.columns(7)
+    col1,col2,col3,col4,col5 = st.columns(5)
     produto = df['Produto'].value_counts().index
     produtos = col1.selectbox('Produto', produto)
     quantidade = col2.number_input('Quantidade', min_value=0)
@@ -121,7 +121,7 @@ def vendas():
     st.divider()
 
     df_venda = pd.DataFrame(vendas, columns = ['Produto', 'Quantidade', 'Valor'])
-    col1,col2,col3,col4,col5,col6,col7 = st.columns(7)
+    col1,col2,col3 = st.columns(3)
     col1.dataframe(df_venda)
 
     cadastro = coll4.find({})
@@ -142,21 +142,25 @@ def vendas():
 
     servico_total = int(df_venda['Valor'].sum())
     valor_servico = col2.metric('Valor do serviço', f'R$ {servico_total :,.2f}')
-    nome = clientesdf['nome'].value_counts().index
-    cliente = col3.selectbox('Nome do cliente', nome)
     mecanic = mecanicodf['nome'].value_counts().index
-    mecanico = col4.selectbox('Nome do mecânico', mecanic)
+    mecanico = col1.selectbox('Nome do mecânico', mecanic)
+    nome = clientesdf['nome'].value_counts().index
+    cliente = col1.selectbox('Nome do cliente', nome)
+    m_obra = col2.number_input('Valor mão de obra', min_value=0)
     pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
-    forma_pagamento = col5.selectbox('Forma de pagamento', pagamento)
-    data_debito = col6.date_input('Data do débito', format='DD.MM.YYYY')
+    forma_pagamento = col2.selectbox('Forma de pagamento', pagamento)
+    valor_total_os = servico_total + m_obra
+    valor_full = col3.metric('Valor do serviço', f'R$ {valor_total_os :,.2f}')
+    data_debito = col3.date_input('Data do débito', format='DD.MM.YYYY')
 
     if forma_pagamento == 'Desconto em folha':
-            quantidade_semanas = col7.number_input('Quantidade de semana', min_value= 0)
+            quantidade_semanas = col3.number_input('Quantidade de semana', min_value= 0)
             sell = {'Código' : 4,
                     'Venda' : vendas,
-                    'Valor' : servico_total,
+                    'Valor' : valor_total_os,
                     'Cliente' : cliente,
                     'Mecanico' : mecanico,
+                    'Mão de obra' : m_obra,
                     'Data do débito' : str(data_debito),
                     'Forma de pagamento' : forma_pagamento,
                     'Quantidade de semanas' : quantidade_semanas}
@@ -164,12 +168,15 @@ def vendas():
     else: 
         sell = {'Código' : 4,
                 'Venda' : vendas,
-                'Valor' : servico_total,
+                'Valor' : valor_total_os,
                 'Cliente' : cliente,
                 'Mecanico' : mecanico,
+                'Mão de obra' : m_obra,
                 'Data do débito' : str(data_debito),
                 'Forma de pagamento' : forma_pagamento}
-
+        
+    #df[df['Produto'] == vendas[2]['Produto']]['Quantidade'].values[0] - vendas[2]['Quantidade']
+    
     confirma = st.button('Confirmar serviço')
     if confirma:
         tempo_agora = datetime.now(fuso_horario_brasilia)
@@ -185,7 +192,7 @@ def vendas():
         for produto in vendas:
            product = produto['Produto']
            finalsell = produto['Quantidade'] 
-           coll.update_one({'Produto': product}, {'$set' : {'Quantidade' : int(df[df['Produto'] == product]['Quantidade'].values - finalsell)}})
+           coll.update_one({'Produto': product}, {'$set' : {'Quantidade' : int(df[df['Produto'] == product]['Quantidade'].values[0] - finalsell)}})
         
         st.session_state['vendas'] = []
         st.rerun()
