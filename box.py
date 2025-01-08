@@ -237,17 +237,17 @@ def efetuando_vendas():
         prod = estoque_2['Produto'].value_counts().index
         produto = col2.selectbox('Produto', prod)
         quantidade = col3.number_input('Quantidade.', min_value = 1, max_value=1)
-        data_vale = col4.date_input('Data do vale', format='DD.MM.YYYY')
-        valor_vale = col5.number_input('Valor do vale em R$')
+        data_vale = col1.date_input('Data do vale', format='DD.MM.YYYY')
+        valor_vale = col2.number_input('Valor do vale em R$')
         total = quantidade * valor_vale
         nome = clientesdf['nome'].value_counts().index
-        cliente = col6.selectbox('Nome do cliente', nome)
+        cliente = col3.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
-        forma_pagamento = col7.selectbox('Forma de pagamento', pagamento)
-        data_debito = col8.date_input('Data do débito', format='DD.MM.YYYY')
+        forma_pagamento = col1.selectbox('Forma de pagamento', pagamento)
+        data_debito = col2.date_input('Data do débito', format='DD.MM.YYYY')
 
         if forma_pagamento == 'Desconto em folha':
-            quantidade_semanas = col8.number_input('Quantidade de semana', min_value= 0)
+            quantidade_semanas = col3.number_input('Quantidade de semana', min_value= 0)
             sell = {'Código' : codigo,
                     'Produto' : produto,
                     'Quantidade' : quantidade,
@@ -271,7 +271,7 @@ def efetuando_vendas():
             
         finalsell = estoque_2[estoque_2['Produto'] == produto][['Quantidade']].values[0] - quantidade
         
-        vende_produto = col8.button('Concluir Venda')     
+        vende_produto = col1.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
             data_utc = tempo_agora
@@ -290,18 +290,18 @@ def efetuando_vendas():
         bike = estoque_3['Placa'].value_counts().index
         moto = col2.selectbox('Moto', bike)
         quantidade = col3.number_input('Quantidade de dias', min_value = 1)
-        data_aluguel = col4.date_input('Data do Aluguel', format='DD.MM.YYYY')
-        valor_diaria = col5.number_input('Valor da diaria em R$')
+        data_aluguel = col1.date_input('Data do Aluguel', format='DD.MM.YYYY')
+        valor_diaria = col2.number_input('Valor da diaria em R$')
         total = quantidade * valor_diaria
-        valor_total = col5.metric('Valor total', f'R$ {total:,.2f}')
+        valor_total = col3.metric('Valor total', f'R$ {total:,.2f}')
         nome = clientesdf['nome'].value_counts().index
-        cliente = col6.selectbox('Nome do cliente', nome)
+        cliente = col1.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
-        forma_pagamento = col7.selectbox('Forma de pagamento', pagamento)
-        data_debito = col8.date_input('Data do débito', format='DD.MM.YYYY')
+        forma_pagamento = col2.selectbox('Forma de pagamento', pagamento)
+        data_debito = col3.date_input('Data do débito', format='DD.MM.YYYY')
 
         if forma_pagamento == 'Desconto em folha':
-            quantidade_semanas = col8.number_input('Quantidade de semana', min_value= 0)
+            quantidade_semanas = col1.number_input('Quantidade de semana', min_value= 0)
             sell = {'Código' : codigo,
                     'Produto' : produto,
                     'Moto' : moto,
@@ -328,7 +328,7 @@ def efetuando_vendas():
                     'Data do débito' : str(data_debito)}
             
         #finalsell = estoque_3[estoque_3['Produto'] == produto][['Quantidade']].values - quantidade
-        vende_produto = col8.button('Concluir Venda')     
+        vende_produto = col2.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
             data_utc = tempo_agora
