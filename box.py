@@ -178,7 +178,7 @@ def efetuando_vendas():
     fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
 
 
-    col1,col2,col3,col4, col5,col6,col7,col8= st.columns(8)
+    col1,col2,col3 = st.columns(3)
 
     cod = estoque['Código'].value_counts().index
     codigo = col1.selectbox('Código', cod)
@@ -187,19 +187,19 @@ def efetuando_vendas():
         prod = estoque_1['Produto'].value_counts().index
         produto = col2.selectbox('Produto', prod)
         quantidade = col3.number_input('Quant.', min_value = 0, max_value = 100000, key="input_quantidade_venda")
-        valor_venda = col4.number_input('Valor de venda em R$' )
+        valor_venda = col1.number_input('Valor de venda em R$' )
         total = quantidade * valor_venda
-        valor_total = col4.metric('Valor total', f'R$ {total:,.2f}')
+        valor_total = col2.metric('Valor total', f'R$ {total:,.2f}')
         nome = clientesdf['nome'].value_counts().index
-        cliente = col5.selectbox('Nome do cliente', nome)
+        cliente = col3.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
-        forma_pagamento = col6.selectbox('Forma de pagamento', pagamento)
-        data_debito = col7.date_input('Data do débito', format='DD.MM.YYYY')
+        forma_pagamento = col1.selectbox('Forma de pagamento', pagamento)
+        data_debito = col2.date_input('Data do débito', format='DD.MM.YYYY')
         tempo_agora = datetime.now(fuso_horario_brasilia)
         
 
         if forma_pagamento == 'Desconto em folha':
-            quantidade_semanas = col8.number_input('Quantidade de semana', min_value= 0)
+            quantidade_semanas = col3.number_input('Quantidade de semana', min_value= 0)
             sell = {'Código' : codigo,
                     'Produto' : produto,
                     'Quantidade' : quantidade,
