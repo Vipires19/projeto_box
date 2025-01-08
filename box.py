@@ -288,20 +288,20 @@ def efetuando_vendas():
         prod = estoque_3['Produto'].value_counts().index
         produto = col2.selectbox('Produto', prod)
         bike = estoque_3['Placa'].value_counts().index
-        moto = col2.selectbox('Moto', bike)
-        quantidade = col3.number_input('Quantidade de dias', min_value = 1)
-        data_aluguel = col1.date_input('Data do Aluguel', format='DD.MM.YYYY')
-        valor_diaria = col2.number_input('Valor da diaria em R$')
+        moto = col3.selectbox('Moto', bike)
+        quantidade = col2.number_input('Quantidade de dias', min_value = 1)
+        valor_diaria = col1.number_input('Valor da diaria em R$')
         total = quantidade * valor_diaria
         valor_total = col3.metric('Valor total', f'R$ {total:,.2f}')
+        data_aluguel = col1.date_input('Data do Aluguel', format='DD.MM.YYYY')
         nome = clientesdf['nome'].value_counts().index
-        cliente = col1.selectbox('Nome do cliente', nome)
+        cliente = col2.selectbox('Nome do cliente', nome)
         pagamento = ['Pix', 'Cartão de crédito', 'Dinheiro', 'Desconto em folha']
-        forma_pagamento = col2.selectbox('Forma de pagamento', pagamento)
-        data_debito = col3.date_input('Data do débito', format='DD.MM.YYYY')
+        forma_pagamento = col3.selectbox('Forma de pagamento', pagamento)
+        data_debito = col1.date_input('Data do débito', format='DD.MM.YYYY')
 
         if forma_pagamento == 'Desconto em folha':
-            quantidade_semanas = col1.number_input('Quantidade de semana', min_value= 0)
+            quantidade_semanas = col2.number_input('Quantidade de semana', min_value= 0)
             sell = {'Código' : codigo,
                     'Produto' : produto,
                     'Moto' : moto,
@@ -328,7 +328,7 @@ def efetuando_vendas():
                     'Data do débito' : str(data_debito)}
             
         #finalsell = estoque_3[estoque_3['Produto'] == produto][['Quantidade']].values - quantidade
-        vende_produto = col2.button('Concluir Venda')     
+        vende_produto = col1.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
             data_utc = tempo_agora
