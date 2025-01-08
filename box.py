@@ -220,7 +220,7 @@ def efetuando_vendas():
                     'Data do débito' : str(data_debito)}
             
         finalsell = estoque_1[estoque_1['Produto'] == produto][['Quantidade']].values - quantidade
-        vende_produto = col8.button('Concluir Venda')     
+        vende_produto = col1.button('Concluir Venda')     
         if vende_produto:
             tempo_agora = datetime.now(fuso_horario_brasilia)
             data_utc = tempo_agora
