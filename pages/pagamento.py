@@ -182,7 +182,7 @@ def pesquisa_pgto():
         data3 = str(datetime_obj).split(' ')[0].split('-')[2]
         data_metric = f'{data3}/{data2}/{data1}'
 
-        quantidade = df_produto['Quantidade'].value_counts().index
+        #quantidade = df_produto['Quantidade'].value_counts().index
         valor = df_produto['Valor da venda'].value_counts().index[0]
         forma_pgto = df_produto['Forma de pagamento'].value_counts().index[0]
 
